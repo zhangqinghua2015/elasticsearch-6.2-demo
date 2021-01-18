@@ -8,6 +8,7 @@ import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.admin.indices.alias.Alias;
+import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.close.CloseIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -30,6 +31,9 @@ import org.elasticsearch.action.support.IndicesOptions;
 import org.elasticsearch.action.support.replication.ReplicationResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.ByteSizeUnit;
@@ -52,6 +56,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @discription:
@@ -69,7 +74,7 @@ public class ElasticsearchService {
                     .startObject("content").field("type", "keyword").endObject()
                     .endObject()
                 .endObject();
-        System.out.println(xContentBuilder.string());
+        System.out.println(xContentBuilder.toString());
 
         CreateIndexRequest request = new CreateIndexRequest(indexName + "_" + indexVersion)
                 .settings(Settings.builder()
@@ -374,6 +379,14 @@ public class ElasticsearchService {
         searchResponse = ClientFactory.getRestHighLevelClient().search(new SearchRequest().indices(indexName).source(searchSourceBuilder));
         System.out.println(searchResponse.toString());
 
+    }
+
+    public Set<String> getAliases() throws IOException {
+        GetAliasesRequest request = new GetAliasesRequest();
+        GetAliasesResponse getAliasesResponse = ClientFactory.getRestHighLevelClient().indices().getAlias(request, RequestOptions.DEFAULT);
+        Map<String, Set<AliasMetaData>> map = getAliasesResponse.getAliases();
+        Set<String> indices = map.keySet();
+        return indices;
     }
 
 }
